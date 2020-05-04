@@ -91,21 +91,4 @@ function getPlaylistData(cb) {
 	})
 }
 
-// getPlaylistData((err, data) => console.log(data))
-
-function authSpotify(){
-	console.log('here')
-	const clientId = '6ee41ec949c1410e88baf26295177434';
-	const authUrl = 'https://accounts.spotify.com/authorize';
-	const params = {
-		response_type: 'code',
-		redirect_uri: encodeURIComponent('http://localhost:3000/api/v1/auth/spotify'),
-		state: 'random_string_shreyas'
-	}
-	const scope = "playlist-modify-public playlist-read-private playlist-modify-private"
-	const requestUrl = authUrl+'?client_id='+clientId+'&response_type=' + params.response_type
-	+'&redirect_uri=' + params.redirect_uri + '&scope=' + encodeURIComponent(scope) + '&state=' + params.state;
-	window.location = requestUrl;
-	// fetch(requestUrl,{'mode':'cors'}).then((resp) => resp.text()).then(html => document.body.innerHTML = html)
-}
-authSpotify();
+getPlaylistData((err, data) => localStorage.setItem("amazonPlaylists",JSON.stringify(data)))

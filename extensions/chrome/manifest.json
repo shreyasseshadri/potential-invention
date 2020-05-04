@@ -3,7 +3,7 @@
     "name": "Playlist Migrator",
 	"version": "1.0",
 	"description": "Migrates playlist",
-	"permissions": ["tabs"],
+	"permissions": ["tabs","storage"],
 	"icons": {
 		"48": "icons/border-48.png"
 	},

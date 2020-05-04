@@ -91,4 +91,4 @@ function getPlaylistData(cb) {
 	})
 }
 
-getPlaylistData((err, data) => console.log(data))
+getPlaylistData((err, data) => localStorage.setItem("amazonPlaylists",JSON.stringify(data)))
