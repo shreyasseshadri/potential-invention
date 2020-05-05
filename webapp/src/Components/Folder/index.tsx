@@ -6,7 +6,6 @@ import CardMedia from "@material-ui/core/CardMedia";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import Avatar from "@material-ui/core/Avatar";
-import {Link} from 'react-router-dom';
 
 const styles = (theme: Theme) => createStyles({
 	root: {},
@@ -37,6 +36,7 @@ interface Props extends WithStyles<typeof styles> {
 	description: string,
 	thumb?: string,
 	name: string,
+	onClick: (name: string) => void,
 }
 
 interface State {
@@ -44,10 +44,10 @@ interface State {
 
 class Folder extends React.Component<Props, State> {
 	render() {
-		const {classes, thumb, title, description, name} = this.props;
+		const {classes, thumb, title, description, name, onClick} = this.props;
 		return (
 			<Card className={classes.root}>
-				<CardActionArea component={Link} to={name}>
+				<CardActionArea onClick={() => onClick(name)}>
 					{
 						thumb ?
 							<CardMedia
@@ -75,9 +75,6 @@ class Folder extends React.Component<Props, State> {
 				</CardActionArea>
 			</Card>
 		);
-	}
-
-	navigate = () => {
 	}
 }
 

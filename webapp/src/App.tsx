@@ -7,6 +7,7 @@ import {DarkTheme} from './Themes';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import Home from './Components/Home';
 import FourZeroFour from './Components/FourZeroFour';
+import Explorer from "./Components/Explorer";
 
 const styles = (theme: Theme) => ({});
 
@@ -18,14 +19,15 @@ class App extends React.Component {
 				<React.Fragment>
 					<CssBaseline/>
 					<AppContext.Provider value={{}}>
-						<Router>
-							<div>
+						<div>
+							<Router>
 								<Switch>
 									<Route exact path='/' component={Home}/>
+									<Route path='/explore' component={Explorer}/>
 									<Route path='/' component={FourZeroFour}/>
 								</Switch>
-							</div>
-						</Router>
+							</Router>
+						</div>
 					</AppContext.Provider>
 				</React.Fragment>
 			</MuiThemeProvider>

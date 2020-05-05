@@ -1,6 +1,8 @@
 import React from 'react';
 import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core';
-import Explorer from "../Explorer";
+import Typography from "@material-ui/core/Typography";
+import Link from "@material-ui/core/Link";
+import {Link as RouterLink} from "react-router-dom";
 
 const styles = (theme: Theme) => createStyles({
 	root: {}
@@ -17,7 +19,8 @@ class Home extends React.Component<Props, State> {
 		const {classes} = this.props;
 		return (
 			<div className={classes.root}>
-				<Explorer/>
+				<Typography variant={"h1"}>Home</Typography>
+				<Link component={RouterLink} to={'explore'}>Explore</Link>
 			</div>
 		);
 	}
