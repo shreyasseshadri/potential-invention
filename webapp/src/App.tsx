@@ -9,6 +9,7 @@ import Home from './Components/Home';
 import FourZeroFour from './Components/FourZeroFour';
 import SignUp from './Components/SignUp';
 import SignIn from './Components/SignIn';
+import Explorer from "./Components/Explorer";
 
 const styles = (theme: Theme) => ({});
 
@@ -20,16 +21,17 @@ class App extends React.Component {
 				<React.Fragment>
 					<CssBaseline />
 					<AppContext.Provider value={{}}>
-						<Router>
-							<div>
+						<div>
+							<Router>
 								<Switch>
 									<Route exact path='/' component={Home} />
 									<Route exact path='/signup' component={SignUp} />
 									<Route exact path='/signin' component={SignIn} />
-									<Route path='/' component={FourZeroFour} />
+									<Route path='/explore' component={Explorer}/>
+									<Route path='/' component={FourZeroFour}/>
 								</Switch>
-							</div>
-						</Router>
+							</Router>
+						</div>
 					</AppContext.Provider>
 				</React.Fragment>
 			</MuiThemeProvider>
