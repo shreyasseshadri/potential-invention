@@ -1,15 +1,26 @@
 import React from 'react';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core';
+import Explorer from "../Explorer";
 
-const useStyles = makeStyles((theme: Theme) =>
-	createStyles({
-		root: {
-			padding: theme.spacing(1),
-		},
-	}),
-);
+const styles = (theme: Theme) => createStyles({
+	root: {}
+});
 
-export default function Home() {
-	const classes = useStyles();
-	return <div className={classes.root}>{"Home"}</div>;
+interface Props extends WithStyles<typeof styles> {
 }
+
+interface State {
+}
+
+class Home extends React.Component<Props, State> {
+	render() {
+		const {classes} = this.props;
+		return (
+			<div className={classes.root}>
+				<Explorer/>
+			</div>
+		);
+	}
+}
+
+export default withStyles(styles, {withTheme: true})(Home);
