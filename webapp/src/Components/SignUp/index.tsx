@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { WithStyles } from '@material-ui/core/styles/withStyles';
-import { customFetch } from '../helpers';
+import { customFetch } from '../../Helpers';
 import { History } from 'history';
 
 const useStyles = (theme: Theme) => createStyles({
@@ -66,7 +66,7 @@ class SignUp extends React.Component<Props, State> {
 			}
 			else {
 				console.log(`Response ${resp}`);
-				history.push("/signin");
+				history.push("/login");
 			}
 		})
 	}
@@ -124,8 +124,8 @@ class SignUp extends React.Component<Props, State> {
 			</Button>
 						<Grid container justify="flex-end">
 							<Grid item>
-								<Link href="/signin" variant="body2">
-									Already have an account? Sign in
+								<Link href="/login" variant="body2">
+									Already have an account? Login!
 				</Link>
 							</Grid>
 						</Grid>

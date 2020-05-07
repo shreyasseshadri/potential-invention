@@ -3,14 +3,15 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import { Link } from 'react-router-dom';
-import Grid from '@material-ui/core/Grid';
+import Link from '@material-ui/core/Link';
+import {Link as RouterLink} from 'react-router-dom';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
-import { withStyles, Theme, WithStyles, createStyles } from '@material-ui/core/styles';
+import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { History } from 'history';
-import { customFetch } from '../helpers';
+import {History} from 'history';
+import AppContext from '../../AppContext';
+import {fetchLogin} from "../../Helpers";
 
 const useStyles = (theme: Theme) => createStyles({
 	paper: {
@@ -24,7 +25,10 @@ const useStyles = (theme: Theme) => createStyles({
 		backgroundColor: theme.palette.secondary.main,
 	},
 	form: {
-		width: '100%', 
+		width: '100%',
+		marginTop: theme.spacing(1),
+	},
+	errMessage: {
 		marginTop: theme.spacing(1),
 	},
 	submit: {
@@ -33,56 +37,50 @@ const useStyles = (theme: Theme) => createStyles({
 });
 
 interface Props extends WithStyles {
-	history: History
+	history: History,
+	onLogin: () => void,
 }
+
 interface State {
 	username: string,
-	password: string
+	password: string,
+	errMessage: string,
 }
 
-class SignIn extends React.Component<Props, State>{
+class Login extends React.Component<Props, State> {
 	state: State = {
 		username: '',
-		password: ''
-	}
+		password: '',
+		errMessage: '',
+	};
 
 	handleLogin = () => {
-		const { username, password } = this.state;
-		var { history } = this.props;
-		var fetchOptions = {
-			method: "POST",
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				"username": username,
-				"password": password
-			})
-		}
-		customFetch("/api/v1/auth/login", fetchOptions, (err, resp) => {
+		const {username, password} = this.state;
+		const {setLoading, resetLoading} = this.context;
+		setLoading();
+		fetchLogin(this.context.appServer, {username, password}, (err) => {
 			if (err) {
-				console.log(err);
+				this.setState({errMessage: err.message});
+			} else {
+				this.setState({errMessage: ''}, () => this.props.onLogin());
 			}
-			else {
-				console.log(`Response ${resp}`);
-				history.push("/");
-			}
-		})
-	}
+			resetLoading();
+		});
+	};
 
 	render() {
-
-		const { classes } = this.props;
+		const {errMessage} = this.state;
+		const {classes} = this.props;
 		return (
 			<Container component="main" maxWidth="xs">
-				<CssBaseline />
+				<CssBaseline/>
 				<div className={classes.paper}>
 					<Avatar className={classes.avatar}>
-						<LockOutlinedIcon />
+						<LockOutlinedIcon/>
 					</Avatar>
 					<Typography component="h1" variant="h5">
-						Sign in
-            		</Typography>
+						Login
+					</Typography>
 					<form className={classes.form} noValidate>
 						<TextField
 							variant="outlined"
@@ -94,7 +92,7 @@ class SignIn extends React.Component<Props, State>{
 							name="email"
 							autoComplete="username"
 							autoFocus
-							onChange={(event) => this.setState({ username: event.target.value })}
+							onChange={(event) => this.setState({username: event.target.value})}
 						/>
 						<TextField
 							variant="outlined"
@@ -106,29 +104,38 @@ class SignIn extends React.Component<Props, State>{
 							type="password"
 							id="password"
 							autoComplete="current-password"
-							onChange={(event) => this.setState({ password: event.target.value })}
+							onChange={(event) => this.setState({password: event.target.value})}
 
 						/>
+						{
+							errMessage ?
+								<Typography className={classes.errMessage} align={"center"}
+											color={"error"}>{errMessage}</Typography>
+								: null
+						}
 						<Button
 							fullWidth
 							variant="contained"
 							color="primary"
 							className={classes.submit}
-							onClick={() => { this.handleLogin(); }}
+							onClick={() => {
+								this.handleLogin();
+							}}
 						>
-							Sign In
+							Login
 						</Button>
-						<Grid container justify="center">
-							<Grid item>
-								<Link to="/signup" style={{ textDecoration: 'none' }}>
-									Don&apos;t have an account? Sign Up
-                  				</Link>
-							</Grid>
-						</Grid>
+						<Typography align={"center"}>
+							<Link component={RouterLink} to="/signup">
+								Don't have an account? Sign Up!
+							</Link>
+						</Typography>
 					</form>
 				</div>
 			</Container>
 		);
 	}
 }
-export default withStyles(useStyles, { withTheme: true })(SignIn);
+
+Login.contextType = AppContext;
+
+export default withStyles(useStyles, {withTheme: true})(Login);
