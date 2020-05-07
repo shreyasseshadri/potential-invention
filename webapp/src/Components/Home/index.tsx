@@ -20,7 +20,10 @@ class Home extends React.Component<Props, State> {
 		return (
 			<div className={classes.root}>
 				<Typography variant={"h1"}>Home</Typography>
-				<Link component={RouterLink} to={'explore'}>Explore</Link>
+				<Typography><Link component={RouterLink} to={'explore'}>Explore</Link></Typography>
+				<Typography><Link component={RouterLink} to={'login'}>Login</Link></Typography>
+				<Typography><Link component={RouterLink} to={'logout'}>Logout</Link></Typography>
+				<Typography><Link component={RouterLink} to={'signup'}>Signup</Link></Typography>
 			</div>
 		);
 	}

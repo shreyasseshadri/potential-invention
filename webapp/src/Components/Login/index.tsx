@@ -9,7 +9,6 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import {History} from 'history';
 import AppContext from '../../AppContext';
 import {fetchLogin} from "../../Helpers";
 
@@ -26,9 +25,10 @@ const useStyles = (theme: Theme) => createStyles({
 	},
 	form: {
 		width: '100%',
-		marginTop: theme.spacing(1),
+		marginTop: theme.spacing(3),
 	},
 	errMessage: {
+		textTransform: 'capitalize',
 		marginTop: theme.spacing(1),
 	},
 	submit: {
@@ -37,7 +37,6 @@ const useStyles = (theme: Theme) => createStyles({
 });
 
 interface Props extends WithStyles {
-	history: History,
 	onLogin: () => void,
 }
 
@@ -126,7 +125,7 @@ class Login extends React.Component<Props, State> {
 						</Button>
 						<Typography align={"center"}>
 							<Link component={RouterLink} to="/signup">
-								Don't have an account? Sign Up!
+								Don't have an account? Signup!
 							</Link>
 						</Typography>
 					</form>
