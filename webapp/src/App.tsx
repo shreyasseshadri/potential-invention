@@ -13,6 +13,7 @@ import Explorer from "./Components/Explorer";
 import {IAppServer, IUser} from "./Interfaces";
 import {fetchUser} from "./Helpers";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import Logout from "./Components/Logout";
 
 const styles = (theme: Theme) => ({});
 
@@ -56,6 +57,7 @@ class App extends React.Component<Props, State> {
 								<Switch>
 									<Route exact path='/' component={Home}/>
 									<Route path='/signup' component={SignUp}/>
+									<Route path='/logout' component={this.LogoutComponent}/>
 									<Route path='/login' component={this.LoginComponent}/>
 									<Route path='/explore' component={user ? Explorer : this.LoginComponent}/>
 									<Route path='/' component={FourZeroFour}/>
@@ -85,6 +87,15 @@ class App extends React.Component<Props, State> {
 		);
 	};
 
+	LogoutComponent = (props: any) => {
+		return (
+			<Logout
+				{...props}
+				onLogout={this.onLogout}
+			/>
+		);
+	};
+
 	onLogin = () => {
 		if (this.props.history.location.pathname === '/login') {
 			this.props.history.push('/');
@@ -98,6 +109,12 @@ class App extends React.Component<Props, State> {
 			}
 			this.resetLoading();
 		});
+	};
+
+	onLogout = () => {
+		// Note: replace history, so that back navigation doesn't go to /logout
+		this.props.history.replace('/login');
+		this.setState({user: null});
 	};
 
 	checkSession() {

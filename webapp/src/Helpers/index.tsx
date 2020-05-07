@@ -85,3 +85,23 @@ export function fetchSignup(appServer: IAppServer,
 		})
 		.catch(err => done(err));
 }
+
+export function fetchLogout(appServer: IAppServer,
+							done: (err: Error | null) => void) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/auth/logout`;
+	const options: RequestInit = {
+		method: 'POST',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				done(null);
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.catch(err => done(err));
+}
