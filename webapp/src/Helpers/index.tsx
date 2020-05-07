@@ -60,3 +60,28 @@ export function fetchLogin(appServer: IAppServer,
 		})
 		.catch(err => done(err));
 }
+
+export function fetchSignup(appServer: IAppServer,
+							cred: { username: string, password: string },
+							done: (err: Error | null) => void) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/auth/signup`;
+	const options: RequestInit = {
+		method: 'POST',
+		credentials: 'include',
+		mode: fetchMode,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(cred)
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				done(null);
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.catch(err => done(err));
+}
