@@ -112,18 +112,23 @@ export function fetchSpotifyCollection(appServer: IAppServer,
 			}
 		})
 		.then(data => done(null, {
-			Playlists: data.playlists.items.map((i: any) => ({
-				title: i.name,
-				description: i.description || i.name,
-				thumb: i.images[0]?.url,
-				nav: `playlist:${i.id}`,
-			})),
-			Albums: data.albums.items.map((i: any) => ({
-				title: i.album.name,
-				description: i.album.name,
-				thumb: i.album.images[0]?.url,
-				nav: `album:${i.album.id}`,
-			}))
+			title: " Your Spotify Collection",
+			type: "collection",
+			children : {
+				Playlists: data.playlists.items.map((i: any) => ({
+					title: i.name,
+					description: i.description || i.name,
+					thumb: i.images[0]?.url,
+					nav: `playlist:${i.id}`,
+				})),
+				Albums: data.albums.items.map((i: any) => ({
+					title: i.album.name,
+					description: i.album.name,
+					thumb: i.album.images[0]?.url,
+					nav: `album:${i.album.id}`,
+				}))
+	
+			}
 		}))
 		.catch(err => done(err, null));
 }
@@ -147,12 +152,16 @@ export function fetchSpotifyPlaylist(appServer: IAppServer,
 			}
 		})
 		.then(data => done(null, {
-			Tracks: data.tracks.items.map((i: any) => ({
-				title: i.track.name,
-				description: formatDurationFromMillisecond(i.track.duration_ms) + (i.track?.album?.name ? ` ${i.track.album.name}` : ''),
-				thumb: i.track?.album?.images[0]?.url,
-				nav: `track:${i.track.id}`,
-			}))
+			title: data.name,
+			type: "playlist",
+			children : {
+				Tracks: data.tracks.items.map((i: any) => ({
+					title: i.track.name,
+					description: formatDurationFromMillisecond(i.track.duration_ms) + (i.track?.album?.name ? ` ${i.track.album.name}` : ''),
+					thumb: i.track?.album?.images[0]?.url,
+					nav: `track:${i.track.id}`,
+				}))
+			}
 		}))
 		.catch(err => done(err, null));
 }
