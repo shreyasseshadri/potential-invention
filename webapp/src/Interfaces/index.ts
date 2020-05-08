@@ -7,6 +7,13 @@ export interface IAppServer {
 	apiRoot: string,
 }
 
+export interface IFolderData {
+	title: string,
+	description: string,
+	thumb?: string
+	nav: string,
+}
+
 export interface IAppContext {
 	user: IUser,
 	appServer: IAppServer,
