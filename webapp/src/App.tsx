@@ -1,5 +1,5 @@
 import React from 'react';
-import {Theme, WithStyles, withStyles} from '@material-ui/core';
+import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core';
 import {MuiThemeProvider} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppContext from './AppContext';
@@ -15,7 +15,14 @@ import {fetchUser} from "./Helpers";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Logout from "./Components/Logout";
 
-const styles = (theme: Theme) => ({});
+const styles = (theme: Theme) => createStyles({
+	loadingNotifier: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		width: "100%",
+	}
+});
 
 interface Props extends WithStyles<typeof styles>, RouteComponentProps {
 }
@@ -38,6 +45,7 @@ class App extends React.Component<Props, State> {
 	}
 
 	render() {
+		const {classes} = this.props;
 		const {user, loadingCalls} = this.state;
 		return (
 			<MuiThemeProvider theme={DarkTheme}>
@@ -50,7 +58,7 @@ class App extends React.Component<Props, State> {
 						resetLoading: this.resetLoading,
 					}}>
 						<div>
-							<div>
+							<div className={classes.loadingNotifier}>
 								{loadingCalls ? <LinearProgress/> : null}
 							</div>
 							<div>
