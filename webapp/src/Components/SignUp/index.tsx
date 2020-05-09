@@ -35,6 +35,9 @@ const useStyles = (theme: Theme) => createStyles({
 	submit: {
 		margin: theme.spacing(3, 0, 2),
 	},
+	login: {
+		marginBottom: theme.spacing(2),
+	},
 });
 
 interface Props extends WithStyles {
@@ -72,7 +75,7 @@ class SignUp extends React.Component<Props, State> {
 
 	render(): ReactNode {
 		const {classes} = this.props;
-		const {errMessage, success} = this.state;
+		const {username, errMessage, success} = this.state;
 		return (
 			<Container component="main" maxWidth="xs">
 				<CssBaseline/>
@@ -93,6 +96,7 @@ class SignUp extends React.Component<Props, State> {
 							label="Username"
 							name="username"
 							autoComplete="Username"
+							autoFocus
 							onChange={(event) => this.setState({username: event.target.value})}
 						/>
 						<TextField
@@ -119,28 +123,28 @@ class SignUp extends React.Component<Props, State> {
 											color={"textPrimary"}>Success!</Typography>
 								: null
 						}
+						<Button
+							fullWidth
+							variant="contained"
+							color="primary"
+							className={classes.submit}
+							onClick={() => this.handleSubmit()}
+						>
+							Signup
+						</Button>
 						{
 							success ?
 								<Button
 									fullWidth
 									variant="contained"
 									color="secondary"
-									className={classes.submit}
+									className={classes.login}
 									component={RouterLink}
-									to={'/login'}
+									to={`/login/${username}`}
 								>
 									Go to login
 								</Button>
-								:
-								<Button
-									fullWidth
-									variant="contained"
-									color="primary"
-									className={classes.submit}
-									onClick={() => this.handleSubmit()}
-								>
-									Signup
-								</Button>
+								: null
 						}
 						<Typography align={"center"}>
 							<Link component={RouterLink} to="/login">

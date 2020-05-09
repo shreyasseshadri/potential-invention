@@ -66,7 +66,7 @@ class App extends React.Component<Props, State> {
 									<Route exact path='/' component={Home}/>
 									<Route path='/signup' component={SignUp}/>
 									<Route path='/logout' component={this.LogoutComponent}/>
-									<Route path='/login' component={this.LoginComponent}/>
+									<Route path='/login/:username?' component={this.LoginComponent}/>
 									<Route path='/explore' component={user ? Explorer : this.LoginComponent}/>
 									<Route path='/' component={FourZeroFour}/>
 								</Switch>
@@ -105,7 +105,7 @@ class App extends React.Component<Props, State> {
 	};
 
 	onLogin = () => {
-		if (this.props.history.location.pathname === '/login') {
+		if (this.props.history.location.pathname.startsWith('/login')) {
 			this.props.history.push('/');
 		}
 		this.setLoading();

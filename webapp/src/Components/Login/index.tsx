@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, RouteComponentProps} from 'react-router-dom';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core/styles';
@@ -36,7 +36,11 @@ const useStyles = (theme: Theme) => createStyles({
 	},
 });
 
-interface Props extends WithStyles {
+interface MatchParams {
+	username: string | undefined;
+}
+
+interface Props extends WithStyles, RouteComponentProps<MatchParams> {
 	onLogin: () => void,
 }
 
@@ -44,13 +48,15 @@ interface State {
 	username: string,
 	password: string,
 	errMessage: string,
+	usernameSuggested: boolean,
 }
 
 class Login extends React.Component<Props, State> {
 	state: State = {
-		username: '',
+		username: this.props.match.params.username || '',
 		password: '',
 		errMessage: '',
+		usernameSuggested: this.props.match.params.username != null,
 	};
 
 	handleLogin = () => {
@@ -68,7 +74,7 @@ class Login extends React.Component<Props, State> {
 	};
 
 	render() {
-		const {errMessage} = this.state;
+		const {username, errMessage, usernameSuggested} = this.state;
 		const {classes} = this.props;
 		return (
 			<Container component="main" maxWidth="xs">
@@ -90,7 +96,8 @@ class Login extends React.Component<Props, State> {
 							label="Username"
 							name="email"
 							autoComplete="username"
-							autoFocus
+							value={username}
+							autoFocus={!usernameSuggested}
 							onChange={(event) => this.setState({username: event.target.value})}
 						/>
 						<TextField
@@ -103,6 +110,7 @@ class Login extends React.Component<Props, State> {
 							type="password"
 							id="password"
 							autoComplete="current-password"
+							autoFocus={usernameSuggested}
 							onChange={(event) => this.setState({password: event.target.value})}
 
 						/>
