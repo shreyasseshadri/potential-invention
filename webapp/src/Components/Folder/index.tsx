@@ -6,6 +6,7 @@ import CardMedia from "@material-ui/core/CardMedia";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import Avatar from "@material-ui/core/Avatar";
+import {IFolderData} from "../../Interfaces";
 
 const styles = (theme: Theme) => createStyles({
 	root: {},
@@ -32,11 +33,8 @@ const styles = (theme: Theme) => createStyles({
 });
 
 interface Props extends WithStyles<typeof styles> {
-	title: string,
-	description: string,
-	thumb?: string,
-	name: string,
-	onClick: (name: string) => void,
+	data: IFolderData,
+	onClick: (nav: string) => void,
 }
 
 interface State {
@@ -44,10 +42,10 @@ interface State {
 
 class Folder extends React.Component<Props, State> {
 	render() {
-		const {classes, thumb, title, description, name, onClick} = this.props;
+		const {classes, data: {title, description, thumb, nav}, onClick} = this.props;
 		return (
 			<Card className={classes.root}>
-				<CardActionArea onClick={() => onClick(name)}>
+				<CardActionArea onClick={nav ? (() => onClick(nav)) : undefined}>
 					{
 						thumb ?
 							<CardMedia
