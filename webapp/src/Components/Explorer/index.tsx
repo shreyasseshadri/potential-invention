@@ -1,19 +1,16 @@
 import React from 'react';
-import { createStyles, Theme, withStyles, WithStyles, Modal, Fade, Divider } from '@material-ui/core';
-import { RouteComponentProps } from "react-router-dom";
+import {createStyles, Theme, WithStyles, withStyles} from '@material-ui/core';
+import {RouteComponentProps} from "react-router-dom";
 import AppContext from '../../AppContext';
 import Grid from "@material-ui/core/Grid";
 import Folder from "../Folder";
 import Typography from "@material-ui/core/Typography";
-import { fetchSpotifyCollection, fetchSpotifyPlaylist } from "../../Helpers";
-import { IFolderData } from "../../Interfaces";
+import {fetchServices, fetchSpotifyCollection, fetchSpotifyPlaylist} from "../../Helpers";
+import {IFolderData, IResourceFetcherCallback} from "../../Interfaces";
 import ArrowBackRoundedIcon from '@material-ui/icons/ArrowBackRounded';
-import CloseIcon from '@material-ui/icons/Close';
-import Backdrop from '@material-ui/core/Backdrop';
 import Button from '@material-ui/core/Button';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import IconButton from "@material-ui/core/IconButton";
+import Migrator from "../Migrator";
 
 const styles = (theme: Theme) => createStyles({
 	root: {
@@ -21,9 +18,6 @@ const styles = (theme: Theme) => createStyles({
 	},
 	folders: {
 		padding: theme.spacing(5)
-	},
-	icons: {
-		cursor: 'pointer'
 	},
 	modal: {
 		display: 'flex',
@@ -46,22 +40,18 @@ interface Props extends WithStyles<typeof styles>, RouteComponentProps {
 }
 
 interface State {
-	title: string,
-	type: string,
-	children: Record<string, IFolderData[]>,
+	item: IFolderData | null,
+	content: Record<string, IFolderData[]> | null,
 	resourceError: string,
-	openModal: boolean,
-	songsToMigrate: Set<string>,
+	openMigrator: boolean,
 }
 
 class Explorer extends React.Component<Props, State> {
 	state: State = {
-		title: '',
-		type: '',
-		children: {},
+		item: null,
+		content: null,
 		resourceError: '',
-		songsToMigrate: new Set(),
-		openModal: false
+		openMigrator: false
 	};
 	unListen: any;
 
@@ -76,155 +66,70 @@ class Explorer extends React.Component<Props, State> {
 		this.unListen();
 	}
 
-	initMigration(): void {
-		this.setState({songsToMigrate: new Set()});
-		this.setState((prev) => {
-			var tempSet = prev.songsToMigrate;
-			var key = (prev.type === "playlist") ? "Tracks" : "Albums"
-			prev.children[key].map(child => tempSet.add(child.title))
-			return { songsToMigrate: tempSet }
-		});
-		this.setState({ openModal: true });
-	}
-
-	handleSongCheck(name: string, checked: boolean): void {
-		this.setState((prev) => {
-			var tempSet = prev.songsToMigrate;
-			(checked) ? tempSet.add(name) : tempSet.delete(name);
-			return { songsToMigrate: tempSet }
-		})
-	}
-
-	handleMigrate(): void {
-		console.log(this.state.songsToMigrate)
-		this.setState({songsToMigrate: new Set()});
-		this.setState({ openModal: false });
-	}
-
 	render() {
-		const { classes } = this.props;
-		const { children, resourceError, openModal, title, type } = this.state;
-		var ChildKey = (type === "playlist") ? "Tracks" : "Albums";
+		const {classes} = this.props;
+		const {content, resourceError, item, openMigrator} = this.state;
 		return (
 			<div className={classes.root}>
-				<Modal
-					aria-labelledby="transition-modal-title"
-					aria-describedby="transition-modal-description"
-					className={classes.modal}
-					open={openModal}
-					onClose={() => this.setState({ openModal: false })}
-					closeAfterTransition
-					BackdropComponent={Backdrop}
-					BackdropProps={{
-						timeout: 500,
-					}}
-				>
-					<Fade in={openModal}>
-						<div className={classes.paper}>
-							{/* <CloseIcon style={{padding:1}} className={classes.icons} onClick={() => this.setState({openModal:false})}/> */}
-							<Typography variant={"h3"} align="center">Migrate {title}</Typography>
-							<Divider variant="middle" />
-							<br />
-							<Grid container style={{ maxHeight: 400, overflow: 'auto' }}>
-								<FormGroup>
-									{
-										(!children[ChildKey]) ? null :
-											children[ChildKey].map((child, i) => {
-												return (
-													<FormControlLabel
-														control={
-															<Checkbox
-																key={i}
-																defaultChecked={true}
-																name={child.title}
-																color="primary"
-																onChange={(event) => this.handleSongCheck(event.target.name, event.target.checked)}
-															/>
-														}
-														label={child.title}
-													/>
-												)
-											})
-									}
-								</FormGroup>
-							</Grid>
-							<Divider variant="middle" />
-							<br />
-							<Grid container direction="column">
-								<Grid item>
-									<Typography variant={"h4"}> Where to migrate ? </Typography>
-								</Grid>
-								<Grid item>
-									<FormGroup>
-										<FormControlLabel
-											control={
-												<Checkbox
-													name={"Amazon"}
-													color="primary"
-												/>
-											}
-											label="Amazon"
-										/>
-									</FormGroup>
-								</Grid>
-							</Grid>
-							<Grid container justify="center" alignItems="center">
-								<Button variant="contained" onClick={() => this.handleMigrate()}>Migrate</Button>
-							</Grid>
-						</div>
-					</Fade>
-				</Modal>
+				{
+					openMigrator && item && content ?
+						<Migrator
+							item={item}
+							contents={content["tracks"]}
+							onClose={() => this.setState({openMigrator: false})}
+						/> : null
+				}
 				<Grid container direction="row" justify="space-around" alignItems="center">
 					<Grid item>
 						{
-							(this.props.history.location.pathname.split('/').filter(s => s.length > 0).length > 1) ?
-								<ArrowBackRoundedIcon onClick={() => { this.goBack() }} className={classes.icons} /> :
-								null
+							<IconButton
+								onClick={this.goBack}
+								disabled={this.props.history.location.pathname.split('/').filter(s => s.length > 0).length <= 1}
+							>
+								<ArrowBackRoundedIcon/>
+							</IconButton>
 						}
 					</Grid>
 					<Grid item>
 						{
-							title && !resourceError ?
-								<Typography variant={"h3"}>{title}</Typography> : null
+							item ?
+								<Typography variant={"h4"}>{item.title}</Typography> :
+								<Typography variant={"h4"} color={"error"}>{resourceError}</Typography>
 						}
 					</Grid>
 					<Grid item>
 						{
-							(type === "album" || type === "playlist") && !resourceError ?
-								<Button className={classes.migrateButton} size="large" onClick={() => this.initMigration()}>Migrate!</Button> : null
+							item && (item.type === "album" || item.type === "playlist") && !resourceError ?
+								<Button className={classes.migrateButton} size="large"
+										onClick={() => this.setState({openMigrator: true})}>Migrate!</Button> : null
 						}
 					</Grid>
 				</Grid>
 				{
-					resourceError ?
-						<Typography variant={"h4"} color={"error"}>{resourceError}</Typography> : null
-				}
-				{
-					Object.keys(children).map((category, i) => ((
-						<div key={i} className={classes.folders}>
-							{
-								Object.keys(children).length > 1 ?
-									<Typography gutterBottom variant={"h4"}>{category}</Typography> : null
-							}
-							<Grid container spacing={4}>
+					content ?
+						Object.keys(content).map((category, i) => ((
+							<div key={i} className={classes.folders}>
 								{
-									children[category].map((child, j) => {
-										return (
-											<Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={j}>
-												<Folder
-													title={child.title}
-													description={child.description}
-													thumb={child.thumb}
-													name={child.nav}
-													onClick={this.navigate}
-												/>
-											</Grid>
-										)
-									})
+									Object.keys(content).length > 1 ?
+										<Typography style={{textTransform: "capitalize"}} gutterBottom
+													variant={"h4"}>{category}</Typography> : null
 								}
-							</Grid>
-						</div>
-					)))
+								<Grid container spacing={4}>
+									{
+										content[category].map((contentItem, j) => {
+											return (
+												<Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={j}>
+													<Folder
+														data={contentItem}
+														onClick={this.navigate}
+													/>
+												</Grid>
+											)
+										})
+									}
+								</Grid>
+							</div>
+						))) : null
 				}
 			</div>
 		);
@@ -234,7 +139,7 @@ class Explorer extends React.Component<Props, State> {
 		const pathname = this.props.history.location.pathname.split("/").filter(s => s.length > 0);
 		pathname.pop();
 		this.props.history.push(`/${pathname.join('/')}`);
-	}
+	};
 
 	navigate = (name: string) => {
 		const pathname = this.props.history.location.pathname;
@@ -242,17 +147,21 @@ class Explorer extends React.Component<Props, State> {
 	};
 
 	parseUrl() {
-		const { setLoading, resetLoading } = this.context;
-		const { pathname } = this.props.history.location;
+		const {setLoading, resetLoading} = this.context;
+		const {pathname} = this.props.history.location;
 		setLoading();
 		for (let i = 0; i < this.resources.length; ++i) {
 			let match = pathname.match(this.resources[i].pattern);
 			if (match) {
-				(this.resources[i].callback)(match, (err, data) => {
-					if (err || !data) {
-						this.setState({ resourceError: err?.message || 'Could not find resource', children: {} });
+				(this.resources[i].callback)(match, (err, item, content) => {
+					if (err) {
+						this.setState({resourceError: err?.message, item: null, content: {}});
 					} else {
-						this.setState({ resourceError: '', children: data.children, title: data.title, type: data.type });
+						this.setState({
+							resourceError: '',
+							item: item,
+							content: content
+						});
 					}
 					resetLoading();
 				});
@@ -261,64 +170,40 @@ class Explorer extends React.Component<Props, State> {
 		}
 	}
 
-	fetchServices = ([path]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
-		done(null, {
-			Title: "Your Music Services",
-			children: {
-				"Services": [
-					{
-						title: "Spotify",
-						description: "Your Spotify collection",
-						thumb: "images/sample/Spotify_Icon_RGB_Green.png",
-						nav: "spotify",
-					},
-					{
-						title: "Amazon",
-						description: "Your Amazon collection",
-						nav: "amazon",
-					},
-				]
-			}
-		});
+	fetchServices = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		fetchServices(this.context.appServer, done);
 	};
 
-	fetchCollection = ([path, service]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
+	fetchCollection = ([path, service]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		if (service === 'spotify') {
 			fetchSpotifyCollection(this.context.appServer, done);
 		} else {
-			done(new Error('Resource not found'), null);
+			done(new Error('Resource not found'), null, null);
 		}
 	};
 
-	fetchPlaylist = ([path, service, playlistID]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
+	fetchPlaylist = ([path, service, playlistID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		if (service === 'spotify') {
 			fetchSpotifyPlaylist(this.context.appServer, playlistID, done);
 		} else {
-			done(new Error('Resource not found'), null);
+			done(new Error('Resource not found'), null, null);
 		}
 	};
 
-	fetchPlaylistTrack = ([path, service, playlistID, trackID]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
-		done(new Error('Resource not found'), null);
+	fetchPlaylistTrack = ([path, service, playlistID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		done(new Error('Resource not found'), null, null);
 	};
 
-	fetchAlbum = ([path, service, albumID]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
-		done(new Error('Resource not found'), null);
+	fetchAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		done(new Error('Resource not found'), null, null);
 	};
 
-	fetchAlbumTrack = ([path, service, albumID, trackID]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
-		done(new Error('Resource not found'), null);
+	fetchAlbumTrack = ([path, service, albumID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		done(new Error('Resource not found'), null, null);
 	};
 
-	fetch404 = ([path]: RegExpMatchArray,
-		done: (err: Error | null, data: any | null) => void) => {
-		done(new Error('Resource not found'), null);
+	fetch404 = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		done(new Error('Resource not found'), null, null);
 	};
 
 	resources = [
@@ -355,4 +240,4 @@ class Explorer extends React.Component<Props, State> {
 
 Explorer.contextType = AppContext;
 
-export default withStyles(styles, { withTheme: true })(Explorer);
+export default withStyles(styles, {withTheme: true})(Explorer);
