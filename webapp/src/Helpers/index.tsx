@@ -222,3 +222,90 @@ export function fetchServices(
 		}
 	);
 }
+
+export function fetchAmazonCollection(
+	appServer: IAppServer,
+	done: IResourceFetcherCallback
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/amazon/collection`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null,
+			{
+				id: "amazon-service",
+				type: "service",
+				title: "Amazon",
+				description: "Your Amazon Collection",
+			},
+			{
+				playlists: data.playlists.map((i: any) => ({
+					id: i.id,
+					type: "playlist",
+					title: i.title,
+					description: i.description,
+					thumb: i.thumb,
+					nav: `playlist:${i.id}`,
+				})),
+				albums: data.albums.map((i: any) => ({
+					id: i.id,
+					type: "album",
+					title: i.title,
+					description: i.description,
+					thumb: i.thumb,
+					nav: `album:${i.id}`,
+				}))
+			}))
+		.catch(err => done(err, null, null));
+}
+
+export function fetchAmazonPlaylist(
+	appServer: IAppServer,
+	playlistID: string,
+	done: IResourceFetcherCallback
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/amazon/playlist/${playlistID}`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null,
+			{
+				id: data.id,
+				type: "playlist",
+				title: data.title,
+				description: data.description,
+			}, {
+				tracks: data.tracks.map((i: any) => ({
+					id: i.id,
+					type: 'track',
+					title: i.title,
+					description: i.description,
+					// Note: playlist thumb instead of track thumb
+					thumb: data.thumb,
+					nav: `track:${i.id}`,
+				}))
+			}))
+		.catch(err => done(err, null, null));
+}

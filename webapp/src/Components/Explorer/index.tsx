@@ -5,12 +5,19 @@ import AppContext from '../../AppContext';
 import Grid from "@material-ui/core/Grid";
 import Folder from "../Folder";
 import Typography from "@material-ui/core/Typography";
-import {fetchServices, fetchSpotifyCollection, fetchSpotifyPlaylist} from "../../Helpers";
+import {
+	fetchAmazonCollection,
+	fetchAmazonPlaylist,
+	fetchServices,
+	fetchSpotifyCollection,
+	fetchSpotifyPlaylist
+} from "../../Helpers";
 import {IFolderData, IResourceFetcherCallback} from "../../Interfaces";
 import ArrowBackRoundedIcon from '@material-ui/icons/ArrowBackRounded';
 import Button from '@material-ui/core/Button';
 import IconButton from "@material-ui/core/IconButton";
 import Migrator from "../Migrator";
+import {Simulate} from "react-dom/test-utils";
 
 const styles = (theme: Theme) => createStyles({
 	root: {
@@ -177,6 +184,8 @@ class Explorer extends React.Component<Props, State> {
 	fetchCollection = ([path, service]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		if (service === 'spotify') {
 			fetchSpotifyCollection(this.context.appServer, done);
+		} else if (service === 'amazon') {
+			fetchAmazonCollection(this.context.appServer, done);
 		} else {
 			done(new Error('Resource not found'), null, null);
 		}
@@ -185,6 +194,8 @@ class Explorer extends React.Component<Props, State> {
 	fetchPlaylist = ([path, service, playlistID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		if (service === 'spotify') {
 			fetchSpotifyPlaylist(this.context.appServer, playlistID, done);
+		} else if (service === 'amazon') {
+			fetchAmazonPlaylist(this.context.appServer, playlistID, done);
 		} else {
 			done(new Error('Resource not found'), null, null);
 		}
