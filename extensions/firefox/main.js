@@ -1,5 +1,23 @@
 config = window.wrappedJSObject.applicationContextConfiguration;
 
+function amazonPlaylistMapper(d) {
+	return {
+		id: d.playlistId,
+		title: d.title,
+		description: d.title,
+		thumb: d.fourSquareImage ? d.fourSquareImage.url : null,
+	};
+}
+
+function amazonTrackMapper(t) {
+	return {
+		id: t.metadata.requestedMetadata.objectId,
+		title: t.metadata.requestedMetadata.title,
+		description: t.metadata.requestedMetadata.albumName,
+		thumb: null,
+	};
+}
+
 function getPlaylists(cb) {
 	fetch("https://music.amazon.in/EU/api/playlists/", {
 		"credentials": "include",
@@ -25,15 +43,18 @@ function getPlaylists(cb) {
 		}),
 		"method": "POST",
 		"mode": "cors"
-	}).then(res => {
-		if (res.ok) {
-			return res.json()
-		}
-		throw new Error(res.statusText);
-	}).then(data => cb(null, data)).catch(err => cb(err));
+	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			throw new Error(res.statusText);
+		})
+		.then(data => cb(null, data.playlists.map(amazonPlaylistMapper)))
+		.catch(err => cb(err));
 }
 
-function getTracks(playlistIds, cb) {
+function getTracksOfPlaylists(playlistIds, cb) {
 	fetch("https://music.amazon.in/EU/api/playlists/", {
 		"credentials": "include",
 		"headers": {
@@ -59,36 +80,46 @@ function getTracks(playlistIds, cb) {
 		}),
 		"method": "POST",
 		"mode": "cors"
-	}).then(res => {
-		if (res.ok) {
-			return res.json()
-		}
-		throw new Error(res.statusText);
-	}).then(data => cb(null, data)).catch(err => cb(err));
+	})
+		.then(res => {
+			if (res.ok) {
+				return res.json()
+			}
+			throw new Error(res.statusText);
+		})
+		.then(data => cb(null, data)).catch(err => cb(err));
 }
 
-
-function getPlaylistData(cb) {
-	getPlaylists((err, playlistData) => {
+function getDump(cb) {
+	getPlaylists((err, playlists) => {
 		if (err) {
 			return cb(err);
 		}
-		let playlistIds = playlistData.playlists.map(d => d.playlistId);
-		getTracks(playlistIds, (err, data) => {
+		getTracksOfPlaylists(playlists.map(d => d.id), (err, data) => {
 			if (err) {
 				return cb(err);
 			}
-			let playlistData = data.playlists.map(d => ({
-				title: d.metadata.title,
-				tracks: d.tracks.map(t => ({
-					title: t.metadata.requestedMetadata.title,
-					album: t.metadata.requestedMetadata.albumName,
-					artist: t.metadata.requestedMetadata.artistName,
-				}))
+			let playlistData = playlists.map((d, i) => ({
+				...d,
+				tracks: data.playlists[i].tracks.map(amazonTrackMapper)
 			}));
-			cb(null, playlistData);
+			cb(null, { playlists: playlistData, albums: [] });
 		});
 	})
 }
 
-getPlaylistData((err, data) => localStorage.setItem("amazonPlaylists",JSON.stringify(data)))
+function messageExtension(type, data) {
+	browser.runtime.sendMessage({ type, data });
+}
+
+setTimeout(() => {
+	console.log("Collectecting dump");
+	getDump((err, dump) => {
+		if (err) {
+			console.error(err);
+		}
+		else {
+			messageExtension("uploadDump", dump);
+		}
+	})
+}, 1000);

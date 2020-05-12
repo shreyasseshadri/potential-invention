@@ -15,5 +15,10 @@
 				"main.js"
 			]
 		}
-	]
+	],
+	"background": {
+		"scripts": [
+			"background.js"
+		]
+	}
 }
