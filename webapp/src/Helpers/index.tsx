@@ -309,3 +309,56 @@ export function fetchAmazonPlaylist(
 			}))
 		.catch(err => done(err, null, null));
 }
+
+export function fetchSpotifyConnectUrl(
+	appServer: IAppServer,
+	done: (err: Error | null, data: { redirect_uri: string } | null) => void
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const params = new URLSearchParams({
+		redirect_uri: `${getAppRootUrl()}/connect/spotify`
+	}).toString();
+	const url = `${apiRoot}/spotify/auth/authorize?${params}`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null, data))
+		.catch(err => done(err, null));
+}
+
+export function fetchSpotifyAuthCallback(
+	appServer: IAppServer,
+	params: string,
+	done: (err: Error | null) => void
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/spotify/auth/callback${params}`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				done(null);
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.catch(err => done(err));
+}
+
+export function getAppRootUrl() {
+	return window.location.origin;
+}

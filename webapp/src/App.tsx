@@ -14,6 +14,7 @@ import {IAppServer, IUser} from "./Interfaces";
 import {fetchUser} from "./Helpers";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Logout from "./Components/Logout";
+import Connect from "./Components/Connect";
 
 const styles = (theme: Theme) => createStyles({
 	loadingNotifier: {
@@ -68,6 +69,8 @@ class App extends React.Component<Props, State> {
 									<Route path='/logout' component={this.LogoutComponent}/>
 									<Route path='/login/:username?' component={this.LoginComponent}/>
 									<Route path='/explore' component={user ? Explorer : this.LoginComponent}/>
+									<Route path='/connect/:service'
+										   component={user ? Connect : this.LoginComponent}/>
 									<Route path='/' component={FourZeroFour}/>
 								</Switch>
 							</div>

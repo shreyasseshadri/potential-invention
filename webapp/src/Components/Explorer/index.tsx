@@ -17,7 +17,6 @@ import ArrowBackRoundedIcon from '@material-ui/icons/ArrowBackRounded';
 import Button from '@material-ui/core/Button';
 import IconButton from "@material-ui/core/IconButton";
 import Migrator from "../Migrator";
-import {Simulate} from "react-dom/test-utils";
 
 const styles = (theme: Theme) => createStyles({
 	root: {
