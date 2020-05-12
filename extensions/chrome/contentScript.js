@@ -6,3 +6,6 @@ function injectScript(file, node) {
     th.appendChild(s);
 }
 injectScript( chrome.extension.getURL('content.js'), 'body');
+window.addEventListener("PassToBackground", function(event) {
+    chrome.runtime.sendMessage(event.detail);
+  }, false);

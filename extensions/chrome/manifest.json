@@ -10,6 +10,12 @@
 	"web_accessible_resources": [
 		"content.js"
 	],
+	"browser_action": {},
+	"background":{
+		"scripts":[
+			"background.js"
+		]
+	},
     "content_scripts": [
       {
         "matches": [
@@ -17,7 +23,8 @@
 			"*://open.spotify.com/*"
         ],
 		"js": [ 
-			"contentScript.js"
+			"contentScript.js",
+			"content.js"
 		]
       }
     ]
