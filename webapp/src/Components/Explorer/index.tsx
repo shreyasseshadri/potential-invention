@@ -6,6 +6,7 @@ import Grid from "@material-ui/core/Grid";
 import Folder from "../Folder";
 import Typography from "@material-ui/core/Typography";
 import {
+	fetchAmazonAlbum,
 	fetchAmazonCollection,
 	fetchAmazonPlaylist,
 	fetchServices,
@@ -205,7 +206,12 @@ class Explorer extends React.Component<Props, State> {
 	};
 
 	fetchAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
-		done(new Error('Resource not found'), null, null);
+		if (service === 'spotify') {
+		} else if (service === 'amazon') {
+			fetchAmazonAlbum(this.context.appServer, albumID, done);
+		} else {
+			done(new Error('Resource not found'), null, null);
+		}
 	};
 
 	fetchAlbumTrack = ([path, service, albumID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {

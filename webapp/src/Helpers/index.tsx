@@ -310,6 +310,46 @@ export function fetchAmazonPlaylist(
 		.catch(err => done(err, null, null));
 }
 
+export function fetchAmazonAlbum(
+	appServer: IAppServer,
+	albumID: string,
+	done: IResourceFetcherCallback
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/amazon/album/${albumID}`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null,
+			{
+				id: data.id,
+				type: "album",
+				title: data.title,
+				description: data.description,
+			}, {
+				tracks: data.tracks.map((i: any) => ({
+					id: i.id,
+					type: 'track',
+					title: i.title,
+					description: i.description,
+					// Note: playlist thumb instead of track thumb
+					thumb: data.thumb,
+					nav: `track:${i.id}`,
+				}))
+			}))
+		.catch(err => done(err, null, null));
+}
+
 export function fetchSpotifyConnectUrl(
 	appServer: IAppServer,
 	done: (err: Error | null, data: { redirect_uri: string } | null) => void
