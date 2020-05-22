@@ -10,6 +10,7 @@ import {
 	fetchAmazonCollection,
 	fetchAmazonPlaylist,
 	fetchServices,
+	fetchSpotifyAlbum,
 	fetchSpotifyCollection,
 	fetchSpotifyPlaylist
 } from "../../Helpers";
@@ -207,6 +208,7 @@ class Explorer extends React.Component<Props, State> {
 
 	fetchAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		if (service === 'spotify') {
+			fetchSpotifyAlbum(this.context.appServer, albumID, done);
 		} else if (service === 'amazon') {
 			fetchAmazonAlbum(this.context.appServer, albumID, done);
 		} else {

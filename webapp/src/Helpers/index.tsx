@@ -180,6 +180,44 @@ export function fetchSpotifyPlaylist(
 		.catch(err => done(err, null, null));
 }
 
+export function fetchSpotifyAlbum(
+	appServer: IAppServer,
+	albumID: string,
+	done: IResourceFetcherCallback
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/spotify/access/album/${albumID}`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null,
+			{
+				id: data.id,
+				type: "album",
+				title: data.name,
+				description: "",
+			}, {
+				tracks: data.tracks.items.map((i: any) => ({
+					id: i.id,
+					type: 'track',
+					title: i.name,
+					description: formatDurationFromMillisecond(i.duration_ms),
+					thumb: data.images[0]?.url,
+					nav: `track:${i.id}`,
+				}))
+			}))
+		.catch(err => done(err, null, null));
+}
 
 function formatDurationFromMillisecond(ms: number) {
 	const duration = ms / 1000;
