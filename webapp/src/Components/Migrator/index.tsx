@@ -7,6 +7,7 @@ import {
 	Radio,
 	Tab,
 	Theme,
+	Typography,
 	withStyles,
 	WithStyles,
 } from '@material-ui/core';
@@ -18,12 +19,18 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
 import {MigratorContent, MigratorItem} from "../../Interfaces";
-import DialogActions from "@material-ui/core/DialogActions";
 import Tabs from "@material-ui/core/Tabs";
 import SwipeableViews from 'react-swipeable-views';
 import RadioGroup from "@material-ui/core/RadioGroup";
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (theme: Theme) => createStyles({
+	tabPanel: {
+		padding: theme.spacing(2),
+	},
+	footer: {
+		padding: theme.spacing(2, 0),
+	}
+});
 
 interface Props extends WithStyles<typeof styles> {
 	item: MigratorItem,
@@ -40,6 +47,7 @@ interface State {
 	selectAllContent: boolean,
 	destination: string | null,
 	makePlaylist: boolean,
+	errMessage: string,
 }
 
 class Migrator extends React.Component<Props, State> {
@@ -50,11 +58,23 @@ class Migrator extends React.Component<Props, State> {
 		selectAllContent: true,
 		destination: null,
 		makePlaylist: this.props.item.type === 'playlist',
+		errMessage: '',
 	};
 
 	render() {
-		const {source, destinations} = this.props;
-		const {makePlaylist, destination, contents, item, tabIndex, selectAllContent} = this.state;
+		const {classes, source, destinations} = this.props;
+		const {errMessage, makePlaylist, destination, contents, item, tabIndex, selectAllContent} = this.state;
+		let actionText = '', actionIsError = false;
+		if (errMessage) {
+			actionText = errMessage;
+		} else if (tabIndex === 0) {
+			actionText = 'Select tracks';
+		} else if (tabIndex === 1) {
+			actionText = 'Select destination';
+		} else if (tabIndex === 2) {
+			actionText = destination ? 'Confirm and migrate' : 'Select a service';
+			actionIsError = (destination == null);
+		}
 		return (
 			<Dialog
 				open
@@ -63,98 +83,106 @@ class Migrator extends React.Component<Props, State> {
 				maxWidth={"sm"}
 			>
 				<DialogTitle>
-					Migrate {item.title}
+					<Typography variant={"inherit"}
+								color={actionIsError ? "error" : "textPrimary"}>{actionText}</Typography>
 				</DialogTitle>
 				<DialogContent>
-					<div>
-						<AppBar position="static" color="default">
-							<Tabs
-								value={tabIndex}
-								onChange={this.handleTabChange}
-								indicatorColor="primary"
-								textColor="primary"
-								variant="fullWidth"
-							>
-								<Tab label="Tracks"/>
-								<Tab label="Service"/>
-								<Tab label="Confirm"/>
-							</Tabs>
-						</AppBar>
-						<Grid container style={{maxHeight: 400, overflow: 'auto'}}>
-							<SwipeableViews
-								index={tabIndex}
-								onChangeIndex={this.handleTabSwipe}
-							>
-								<TabPanel value={tabIndex} index={0}>
-									<FormGroup>
-										<FormControlLabel
-											control={
-												<Checkbox
-													checked={selectAllContent}
-													color="primary"
-													onChange={({target: {checked}}) => this.handleSelectAllContent(checked)}
-												/>
-											}
-											label={"Select all"}
-										/>
-										{
-											contents.map(({item, selected}, i) => (
-												<FormControlLabel
-													key={i}
-													control={
-														<Checkbox
-															checked={selected}
-															color="secondary"
-															onChange={({target: {checked}}) => this.handleContentCheck(i, checked)}
-														/>
-													}
-													label={item.title}
-												/>
-											))
-										}
-									</FormGroup>
-								</TabPanel>
-								<TabPanel value={tabIndex} index={1}>
-									<RadioGroup value={destination}
-												onChange={({target: {value}}) => this.setState({destination: value})}>
-										{
-											destinations.map((dst, i) => (
-												<FormControlLabel
-													key={i}
-													control={<Radio/>}
-													label={dst}
-													value={dst}
-													disabled={source === dst}
-												/>
-											))
-										}
-									</RadioGroup>
-								</TabPanel>
-								<TabPanel value={tabIndex} index={2}>
+					<AppBar position="static" color="default">
+						<Tabs
+							value={tabIndex}
+							onChange={this.handleTabChange}
+							indicatorColor="primary"
+							textColor="primary"
+							variant="fullWidth"
+						>
+							<Tab label="Tracks"/>
+							<Tab label="Service"/>
+							<Tab label="Confirm"/>
+						</Tabs>
+					</AppBar>
+					<Grid container style={{maxHeight: 400, overflow: 'auto'}}>
+						<SwipeableViews
+							index={tabIndex}
+							onChangeIndex={this.handleTabSwipe}
+						>
+							<TabPanel className={classes.tabPanel} value={tabIndex} index={0}>
+								<FormGroup>
 									<FormControlLabel
 										control={
 											<Checkbox
+												checked={selectAllContent}
 												color="primary"
-												onChange={({target: {checked}}) => this.setState({makePlaylist: checked})}
+												onChange={({target: {checked}}) => this.handleSelectAllContent(checked)}
 											/>
 										}
-										disabled={item.type === 'playlist' || (!selectAllContent && item.type === 'album')}
-										checked={makePlaylist}
-										label={"Migrate as playlist"}
+										label={"Select all"}
 									/>
-									Migrate {item.title} from {source} to {destination}?
-								</TabPanel>
-							</SwipeableViews>
+									{
+										contents.map(({item, selected}, i) => (
+											<FormControlLabel
+												key={i}
+												control={
+													<Checkbox
+														checked={selected}
+														color="secondary"
+														onChange={({target: {checked}}) => this.handleContentCheck(i, checked)}
+													/>
+												}
+												label={item.title}
+											/>
+										))
+									}
+								</FormGroup>
+							</TabPanel>
+							<TabPanel className={classes.tabPanel} value={tabIndex} index={1}>
+								<RadioGroup value={destination}
+											onChange={({target: {value}}) => this.setState({destination: value})}>
+									{
+										destinations.map((dst, i) => (
+											<FormControlLabel
+												key={i}
+												control={<Radio/>}
+												label={dst}
+												value={dst}
+												disabled={source === dst}
+											/>
+										))
+									}
+								</RadioGroup>
+							</TabPanel>
+							<TabPanel className={classes.tabPanel} value={tabIndex} index={2}>
+								{
+									destination ?
+										<Typography>Migrate '{item.title}' from {source} to {destination}</Typography> :
+										<Typography>Migrate '{item.title}' from {source}</Typography>
+								}
+								<FormControlLabel
+									control={
+										<Checkbox
+											color="primary"
+											onChange={({target: {checked}}) => this.setState({makePlaylist: checked})}
+										/>
+									}
+									disabled={item.type === 'playlist' || (!selectAllContent && item.type === 'album')}
+									checked={makePlaylist}
+									label={"Migrate as playlist"}
+								/>
+							</TabPanel>
+						</SwipeableViews>
+					</Grid>
+					<Grid container justify={'space-between'} alignItems={'flex-end'} className={classes.footer}>
+						<Grid item xs={7}>
+							<Typography noWrap={true}>{item.title}</Typography>
 						</Grid>
-					</div>
+						<Grid item xs={5} dir={'rtl'}>
+							{tabIndex !== 2 ?
+								<Button variant="contained" color={"primary"}
+										onClick={() => this.handleTabSwipe(tabIndex + 1)}>Next</Button> :
+								<Button variant="contained" color={"primary"} disabled={destination == null}
+										onClick={() => this.handleMigrate()}>Migrate</Button>}
+						</Grid>
+					</Grid>
 				</DialogContent>
-				<DialogActions>
-					{tabIndex !== 2 ?
-						<Button variant="contained" color={"secondary"}
-								onClick={() => this.handleTabSwipe(tabIndex + 1)}>Next</Button> :
-						<Button variant="contained" color={"primary"}
-								onClick={() => this.handleMigrate()}>Migrate</Button>}
-				</DialogActions>
 			</Dialog>
 		);
 	}
@@ -198,6 +226,8 @@ interface TabPanelProps {
 	dir?: string;
 	index: any;
 	value: any;
+
+	[key: string]: any;
 }
 
 function TabPanel(props: TabPanelProps) {
