@@ -85,6 +85,8 @@ class Explorer extends React.Component<Props, State> {
 							item={item}
 							contents={content["tracks"]}
 							onClose={() => this.setState({openMigrator: false})}
+							destinations={['Amazon', 'Spotify']}
+							source={'Spotify'}
 						/> : null
 				}
 				<Grid container direction="row" justify="space-around" alignItems="center">

@@ -1,8 +1,17 @@
 import React from 'react';
-import {AppBar, createStyles, DialogContent, DialogTitle, Tab, Theme, withStyles, WithStyles,} from '@material-ui/core';
+import {
+	AppBar,
+	createStyles,
+	DialogContent,
+	DialogTitle,
+	Radio,
+	Tab,
+	Theme,
+	withStyles,
+	WithStyles,
+} from '@material-ui/core';
 import AppContext from '../../AppContext';
 import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
 import Button from '@material-ui/core/Button';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -12,12 +21,15 @@ import {MigratorContent, MigratorItem} from "../../Interfaces";
 import DialogActions from "@material-ui/core/DialogActions";
 import Tabs from "@material-ui/core/Tabs";
 import SwipeableViews from 'react-swipeable-views';
+import RadioGroup from "@material-ui/core/RadioGroup";
 
 const styles = (theme: Theme) => createStyles({});
 
 interface Props extends WithStyles<typeof styles> {
 	item: MigratorItem,
 	contents: MigratorContent[],
+	destinations: string[],
+	source: string,
 	onClose: () => void,
 }
 
@@ -26,6 +38,8 @@ interface State {
 	contents: { selected: boolean, item: MigratorContent }[],
 	tabIndex: number,
 	selectAllContent: boolean,
+	destination: string | null,
+	makePlaylist: boolean,
 }
 
 class Migrator extends React.Component<Props, State> {
@@ -34,10 +48,13 @@ class Migrator extends React.Component<Props, State> {
 		contents: this.props.contents.map(i => ({item: i, selected: true})),
 		tabIndex: 0,
 		selectAllContent: true,
+		destination: null,
+		makePlaylist: this.props.item.type === 'playlist',
 	};
 
 	render() {
-		const {contents, item, tabIndex, selectAllContent} = this.state;
+		const {source, destinations} = this.props;
+		const {makePlaylist, destination, contents, item, tabIndex, selectAllContent} = this.state;
 		return (
 			<Dialog
 				open
@@ -63,12 +80,12 @@ class Migrator extends React.Component<Props, State> {
 								<Tab label="Confirm"/>
 							</Tabs>
 						</AppBar>
-						<SwipeableViews
-							index={tabIndex}
-							onChangeIndex={this.handleTabSwipe}
-						>
-							<TabPanel value={tabIndex} index={0}>
-								<Grid container style={{maxHeight: 400, overflow: 'auto'}}>
+						<Grid container style={{maxHeight: 400, overflow: 'auto'}}>
+							<SwipeableViews
+								index={tabIndex}
+								onChangeIndex={this.handleTabSwipe}
+							>
+								<TabPanel value={tabIndex} index={0}>
 									<FormGroup>
 										<FormControlLabel
 											control={
@@ -96,36 +113,47 @@ class Migrator extends React.Component<Props, State> {
 											))
 										}
 									</FormGroup>
-								</Grid>
-							</TabPanel>
-							<TabPanel value={tabIndex} index={1}>
-								<Grid container direction="column">
-									<Grid item>
-										<Typography variant={"h4"}>Where to migrate?</Typography>
-									</Grid>
-									<Grid item>
-										<FormGroup>
-											<FormControlLabel
-												control={
-													<Checkbox
-														name={"Amazon"}
-														color="primary"
-													/>
-												}
-												label="Amazon"
+								</TabPanel>
+								<TabPanel value={tabIndex} index={1}>
+									<RadioGroup value={destination}
+												onChange={({target: {value}}) => this.setState({destination: value})}>
+										{
+											destinations.map((dst, i) => (
+												<FormControlLabel
+													key={i}
+													control={<Radio/>}
+													label={dst}
+													value={dst}
+													disabled={source === dst}
+												/>
+											))
+										}
+									</RadioGroup>
+								</TabPanel>
+								<TabPanel value={tabIndex} index={2}>
+									<FormControlLabel
+										control={
+											<Checkbox
+												color="primary"
+												onChange={({target: {checked}}) => this.setState({makePlaylist: checked})}
 											/>
-										</FormGroup>
-									</Grid>
-								</Grid>
-							</TabPanel>
-							<TabPanel value={tabIndex} index={2}>
-								Item Three
-							</TabPanel>
-						</SwipeableViews>
+										}
+										disabled={item.type === 'playlist' || (!selectAllContent && item.type === 'album')}
+										checked={makePlaylist}
+										label={"Migrate as playlist"}
+									/>
+									Migrate {item.title} from {source} to {destination}?
+								</TabPanel>
+							</SwipeableViews>
+						</Grid>
 					</div>
 				</DialogContent>
 				<DialogActions>
-					<Button variant="contained" color={"primary"} onClick={() => this.handleMigrate()}>Migrate</Button>
+					{tabIndex !== 2 ?
+						<Button variant="contained" color={"secondary"}
+								onClick={() => this.handleTabSwipe(tabIndex + 1)}>Next</Button> :
+						<Button variant="contained" color={"primary"}
+								onClick={() => this.handleMigrate()}>Migrate</Button>}
 				</DialogActions>
 			</Dialog>
 		);
@@ -135,7 +163,9 @@ class Migrator extends React.Component<Props, State> {
 		this.setState((prev) => {
 			const contents = prev.contents;
 			contents[i].selected = selected;
-			return {contents, selectAllContent: contents.reduce((acc: boolean, {selected}) => (acc && selected), true)};
+			const selectAllContent = contents.reduce((acc: boolean, {selected}) => (acc && selected), true);
+			const makePlaylist = this.props.item.type === 'album' ? !selectAllContent : prev.makePlaylist;
+			return {contents, selectAllContent, makePlaylist};
 		});
 	}
 
@@ -144,8 +174,10 @@ class Migrator extends React.Component<Props, State> {
 	}
 
 	handleMigrate(): void {
-		const selectedContents = this.state.contents.filter(i => i.selected).map(i => i.item);
-		console.log(selectedContents);
+		const {source} = this.props;
+		const {makePlaylist, contents, item, destination} = this.state;
+		const selectedContents = makePlaylist ? contents.filter(i => i.selected).map(i => i.item) : null;
+		console.log(source, destination, makePlaylist ? 'playlist' : 'album', item.title, selectedContents);
 	}
 
 	handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
