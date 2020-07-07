@@ -437,6 +437,34 @@ export function fetchSpotifyAuthCallback(
 		.catch(err => done(err));
 }
 
+export function fetchMigrate(
+	appServer: IAppServer,
+	fromServiceName: string, toServiceName: string, migrationType: string,
+	migrationData: any,
+	done: (err: Error | null, data: any) => void
+) {
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/migrate`;
+	const options: RequestInit = {
+		method: 'POST',
+		credentials: 'include',
+		mode: fetchMode,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({fromServiceName, toServiceName, migrationType, migrationData}),
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				done(null, null);
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.catch(err => done(err, null));
+}
+
 export function getAppRootUrl() {
 	return window.location.origin;
 }

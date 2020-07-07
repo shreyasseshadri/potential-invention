@@ -52,6 +52,7 @@ interface State {
 	content: Record<string, IFolderData[]> | null,
 	resourceError: string,
 	openMigrator: boolean,
+	source: string | null,
 }
 
 class Explorer extends React.Component<Props, State> {
@@ -59,7 +60,8 @@ class Explorer extends React.Component<Props, State> {
 		item: null,
 		content: null,
 		resourceError: '',
-		openMigrator: false
+		openMigrator: false,
+		source: null,
 	};
 	unListen: any;
 
@@ -76,17 +78,17 @@ class Explorer extends React.Component<Props, State> {
 
 	render() {
 		const {classes} = this.props;
-		const {content, resourceError, item, openMigrator} = this.state;
+		const {source, content, resourceError, item, openMigrator} = this.state;
 		return (
 			<div className={classes.root}>
 				{
-					openMigrator && item && content ?
+					openMigrator && item && content && source ?
 						<Migrator
 							item={item}
 							contents={content["tracks"]}
 							onClose={() => this.setState({openMigrator: false})}
-							destinations={['Amazon', 'Spotify']}
-							source={'Spotify'}
+							destinations={['amazon', 'spotify']}
+							source={source}
 						/> : null
 				}
 				<Grid container direction="row" justify="space-around" alignItems="center">
@@ -185,6 +187,7 @@ class Explorer extends React.Component<Props, State> {
 	};
 
 	fetchCollection = ([path, service]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		this.setState({source: service});
 		if (service === 'spotify') {
 			fetchSpotifyCollection(this.context.appServer, done);
 		} else if (service === 'amazon') {
@@ -195,6 +198,7 @@ class Explorer extends React.Component<Props, State> {
 	};
 
 	fetchPlaylist = ([path, service, playlistID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		this.setState({source: service});
 		if (service === 'spotify') {
 			fetchSpotifyPlaylist(this.context.appServer, playlistID, done);
 		} else if (service === 'amazon') {
@@ -209,6 +213,7 @@ class Explorer extends React.Component<Props, State> {
 	};
 
 	fetchAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+		this.setState({source: service});
 		if (service === 'spotify') {
 			fetchSpotifyAlbum(this.context.appServer, albumID, done);
 		} else if (service === 'amazon') {

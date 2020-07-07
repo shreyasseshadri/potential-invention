@@ -4,6 +4,7 @@ import {
 	createStyles,
 	DialogContent,
 	DialogTitle,
+	LinearProgress,
 	Radio,
 	Tab,
 	Theme,
@@ -22,6 +23,7 @@ import {MigratorContent, MigratorItem} from "../../Interfaces";
 import Tabs from "@material-ui/core/Tabs";
 import SwipeableViews from 'react-swipeable-views';
 import RadioGroup from "@material-ui/core/RadioGroup";
+import {fetchMigrate} from "../../Helpers";
 
 const styles = (theme: Theme) => createStyles({
 	tabPanel: {
@@ -48,6 +50,7 @@ interface State {
 	destination: string | null,
 	makePlaylist: boolean,
 	errMessage: string,
+	migrateRequestState: string | null,
 }
 
 class Migrator extends React.Component<Props, State> {
@@ -59,14 +62,20 @@ class Migrator extends React.Component<Props, State> {
 		destination: null,
 		makePlaylist: this.props.item.type === 'playlist',
 		errMessage: '',
+		migrateRequestState: null,
 	};
 
 	render() {
 		const {classes, source, destinations} = this.props;
-		const {errMessage, makePlaylist, destination, contents, item, tabIndex, selectAllContent} = this.state;
+		const {migrateRequestState, errMessage, makePlaylist, destination, contents, item, tabIndex, selectAllContent} = this.state;
 		let actionText = '', actionIsError = false;
 		if (errMessage) {
 			actionText = errMessage;
+			actionIsError = true;
+		} else if (migrateRequestState === 'requested') {
+			actionText = 'Migrating...';
+		} else if (migrateRequestState === 'done') {
+			actionText = 'Migrated!';
 		} else if (tabIndex === 0) {
 			actionText = 'Select tracks';
 		} else if (tabIndex === 1) {
@@ -82,6 +91,7 @@ class Migrator extends React.Component<Props, State> {
 				fullWidth
 				maxWidth={"sm"}
 			>
+				{migrateRequestState === 'requested' ? <LinearProgress/> : null}
 				<DialogTitle>
 					<Typography variant={"inherit"}
 								color={actionIsError ? "error" : "textPrimary"}>{actionText}</Typography>
@@ -90,7 +100,7 @@ class Migrator extends React.Component<Props, State> {
 					<AppBar position="static" color="default">
 						<Tabs
 							value={tabIndex}
-							onChange={this.handleTabChange}
+							onChange={(_, index) => this.handleTabChange(index)}
 							indicatorColor="primary"
 							textColor="primary"
 							variant="fullWidth"
@@ -103,7 +113,7 @@ class Migrator extends React.Component<Props, State> {
 					<Grid container style={{maxHeight: 400, overflow: 'auto'}}>
 						<SwipeableViews
 							index={tabIndex}
-							onChangeIndex={this.handleTabSwipe}
+							onChangeIndex={this.handleTabChange}
 						>
 							<TabPanel className={classes.tabPanel} value={tabIndex} index={0}>
 								<FormGroup>
@@ -177,7 +187,7 @@ class Migrator extends React.Component<Props, State> {
 						<Grid item xs={5} dir={'rtl'}>
 							{tabIndex !== 2 ?
 								<Button variant="contained" color={"primary"}
-										onClick={() => this.handleTabSwipe(tabIndex + 1)}>Next</Button> :
+										onClick={() => this.handleTabChange(tabIndex + 1)}>Next</Button> :
 								<Button variant="contained" color={"primary"} disabled={destination == null}
 										onClick={() => this.handleMigrate()}>Migrate</Button>}
 						</Grid>
@@ -204,16 +214,29 @@ class Migrator extends React.Component<Props, State> {
 	handleMigrate(): void {
 		const {source} = this.props;
 		const {makePlaylist, contents, item, destination} = this.state;
-		const selectedContents = makePlaylist ? contents.filter(i => i.selected).map(i => i.item) : null;
-		console.log(source, destination, makePlaylist ? 'playlist' : 'album', item.title, selectedContents);
+		if (destination == null) return;
+
+		const selectedContents = makePlaylist ? contents.filter(i => i.selected).map(i => ({
+			name: i.item.title, id: i.item.id
+		})) : null;
+		const migrationData = {[makePlaylist ? 'playlistName' : 'albumName']: item.title, songs: selectedContents};
+		this.setState({migrateRequestState: 'requested'});
+		fetchMigrate(this.context.appServer, source, destination, makePlaylist ? 'playlist' : 'album', migrationData,
+			(err, data) => {
+				if (err) {
+					this.setState({migrateRequestState: 'error', errMessage: err.message});
+				} else {
+					this.setState({migrateRequestState: 'done'});
+				}
+			});
 	}
 
-	handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-		this.setState({tabIndex: newValue});
-	};
-
-	handleTabSwipe = (index: number) => {
-		this.setState({tabIndex: index});
+	handleTabChange = (index: number) => {
+		this.setState(prev => ({
+			tabIndex: index,
+			errMessage: '',
+			migrateRequestState: prev.migrateRequestState === 'requested' ? 'requested' : null,
+		}));
 	};
 }
 
