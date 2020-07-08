@@ -10,11 +10,17 @@ Services currently integrated into Music Jump:
 
 Feature Progress
 - [x] Music Explorer to explore your collections on all services
-- [ ] Migration of albums from Amazon to spotify (Mock UI. Backend endpoint completed)
+- [x] Migration of albums from Amazon to spotify
 - [ ] Migration of playlist from Amazon to spotify (Mock UI)
 
 <br/>
 
-## UI Tour
+## Demos
+
+### UI Tour
 
 ![Demo](demo/UI_tour.gif)
+
+### Album Migration
+
+![Demo](demo/album_migrate.gif)
