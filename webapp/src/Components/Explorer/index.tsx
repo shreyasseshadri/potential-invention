@@ -5,15 +5,7 @@ import AppContext from '../../AppContext';
 import Grid from "@material-ui/core/Grid";
 import Folder from "../Folder";
 import Typography from "@material-ui/core/Typography";
-import {
-	fetchAmazonAlbum,
-	fetchAmazonCollection,
-	fetchAmazonPlaylist,
-	fetchServices,
-	fetchSpotifyAlbum,
-	fetchSpotifyCollection,
-	fetchSpotifyPlaylist
-} from "../../Helpers";
+import {fetchAlbum, fetchCollection, fetchPlaylist, fetchServices} from "../../Helpers";
 import {IFolderData, IResourceFetcherCallback} from "../../Interfaces";
 import ArrowBackRoundedIcon from '@material-ui/icons/ArrowBackRounded';
 import Button from '@material-ui/core/Button';
@@ -182,83 +174,65 @@ class Explorer extends React.Component<Props, State> {
 		}
 	}
 
-	fetchServices = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getServices = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		fetchServices(this.context.appServer, done);
 	};
 
-	fetchCollection = ([path, service]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getCollection = ([path, service]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		this.setState({source: service});
-		if (service === 'spotify') {
-			fetchSpotifyCollection(this.context.appServer, done);
-		} else if (service === 'amazon') {
-			fetchAmazonCollection(this.context.appServer, done);
-		} else {
-			done(new Error('Resource not found'), null, null);
-		}
+		fetchCollection(this.context.appServer, service, done);
 	};
 
-	fetchPlaylist = ([path, service, playlistID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getPlaylist = ([path, service, playlistID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		this.setState({source: service});
-		if (service === 'spotify') {
-			fetchSpotifyPlaylist(this.context.appServer, playlistID, done);
-		} else if (service === 'amazon') {
-			fetchAmazonPlaylist(this.context.appServer, playlistID, done);
-		} else {
-			done(new Error('Resource not found'), null, null);
-		}
+		fetchPlaylist(this.context.appServer, service, playlistID, done);
 	};
 
-	fetchPlaylistTrack = ([path, service, playlistID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getPlaylistTrack = ([path, service, playlistID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		done(new Error('Resource not found'), null, null);
 	};
 
-	fetchAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getAlbum = ([path, service, albumID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		this.setState({source: service});
-		if (service === 'spotify') {
-			fetchSpotifyAlbum(this.context.appServer, albumID, done);
-		} else if (service === 'amazon') {
-			fetchAmazonAlbum(this.context.appServer, albumID, done);
-		} else {
-			done(new Error('Resource not found'), null, null);
-		}
+		fetchAlbum(this.context.appServer, service, albumID, done);
 	};
 
-	fetchAlbumTrack = ([path, service, albumID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	getAlbumTrack = ([path, service, albumID, trackID]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		done(new Error('Resource not found'), null, null);
 	};
 
-	fetch404 = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
+	get404 = ([path]: RegExpMatchArray, done: IResourceFetcherCallback) => {
 		done(new Error('Resource not found'), null, null);
 	};
 
 	resources = [
 		{
 			pattern: new RegExp('^/explore/?$'),
-			callback: this.fetchServices
+			callback: this.getServices
 		},
 		{
 			pattern: new RegExp('^/explore/([^/.]+)/?$'),
-			callback: this.fetchCollection
+			callback: this.getCollection
 		},
 		{
 			pattern: new RegExp('^/explore/([^/.]+)/playlist:([^/.]+)/?$'),
-			callback: this.fetchPlaylist
+			callback: this.getPlaylist
 		},
 		{
 			pattern: new RegExp('^/explore/([^/.]+)/playlist:([^/.]+)/track:([^/.]+)/?$'),
-			callback: this.fetchPlaylistTrack
+			callback: this.getPlaylistTrack
 		},
 		{
 			pattern: new RegExp('^/explore/([^/.]+)/album:([^/.]+)/?$'),
-			callback: this.fetchAlbum
+			callback: this.getAlbum
 		},
 		{
 			pattern: new RegExp('^/explore/([^/.]+)/album:([^/.]+)/track:([^/.]+)/?$'),
-			callback: this.fetchAlbumTrack
+			callback: this.getAlbumTrack
 		},
 		{
 			pattern: new RegExp('^.*$'),
-			callback: this.fetch404
+			callback: this.get404
 		},
 	];
 }

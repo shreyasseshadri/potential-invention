@@ -94,12 +94,13 @@ export function fetchLogout(appServer: IAppServer,
 		.catch(err => done(err));
 }
 
-export function fetchSpotifyCollection(
+export function fetchCollection(
 	appServer: IAppServer,
+	service: string,
 	done: IResourceFetcherCallback
 ) {
 	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/spotify/access/collection`;
+	const url = `${apiRoot}/${service}/access/collection`;
 	const options: RequestInit = {
 		method: 'GET',
 		credentials: 'include',
@@ -115,39 +116,27 @@ export function fetchSpotifyCollection(
 		})
 		.then(data => done(null,
 			{
-				id: "spotify-service",
-				type: "service",
-				title: "Spotify",
-				description: "Your Spotify Collection",
+				id: data.id,
+				type: data.type,
+				title: data.title,
+				description: data.description,
 			},
 			{
-				playlists: data.playlists.items.map((i: any) => ({
-					id: i.id,
-					type: "playlist",
-					title: i.name,
-					description: i.description || i.name,
-					thumb: i.images[0]?.url,
-					nav: `playlist:${i.id}`,
-				})),
-				albums: data.albums.items.map((i: any) => ({
-					id: i.album.id,
-					type: "album",
-					title: i.album.name,
-					description: i.album.name,
-					thumb: i.album.images[0]?.url,
-					nav: `album:${i.album.id}`,
-				}))
-			}))
+				playlists: data.playlists,
+				albums: data.albums,
+			})
+		)
 		.catch(err => done(err, null, null));
 }
 
-export function fetchSpotifyPlaylist(
+export function fetchPlaylist(
 	appServer: IAppServer,
+	service: string,
 	playlistID: string,
 	done: IResourceFetcherCallback
 ) {
 	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/spotify/access/playlist/${playlistID}`;
+	const url = `${apiRoot}/${service}/access/playlist/${playlistID}`;
 	const options: RequestInit = {
 		method: 'GET',
 		credentials: 'include',
@@ -164,29 +153,23 @@ export function fetchSpotifyPlaylist(
 		.then(data => done(null,
 			{
 				id: data.id,
-				type: "playlist",
-				title: data.name,
-				description: "",
+				type: data.type,
+				title: data.title,
+				description: data.description,
 			}, {
-				tracks: data.tracks.items.map((i: any) => ({
-					id: i.track.id,
-					type: 'track',
-					title: i.track.name,
-					description: formatDurationFromMillisecond(i.track.duration_ms) + (i.track?.album?.name ? ` ${i.track.album.name}` : ''),
-					thumb: i.track?.album?.images[0]?.url,
-					nav: `track:${i.track.id}`,
-				}))
+				tracks: data.tracks
 			}))
 		.catch(err => done(err, null, null));
 }
 
-export function fetchSpotifyAlbum(
+export function fetchAlbum(
 	appServer: IAppServer,
+	service: string,
 	albumID: string,
 	done: IResourceFetcherCallback
 ) {
 	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/spotify/access/album/${albumID}`;
+	const url = `${apiRoot}/${service}/access/album/${albumID}`;
 	const options: RequestInit = {
 		method: 'GET',
 		credentials: 'include',
@@ -203,29 +186,13 @@ export function fetchSpotifyAlbum(
 		.then(data => done(null,
 			{
 				id: data.id,
-				type: "album",
-				title: data.name,
-				description: "",
+				type: data.type,
+				title: data.title,
+				description: data.description,
 			}, {
-				tracks: data.tracks.items.map((i: any) => ({
-					id: i.id,
-					type: 'track',
-					title: i.name,
-					description: formatDurationFromMillisecond(i.duration_ms),
-					thumb: data.images[0]?.url,
-					nav: `track:${i.id}`,
-				}))
+				tracks: data.tracks
 			}))
 		.catch(err => done(err, null, null));
-}
-
-function formatDurationFromMillisecond(ms: number) {
-	const duration = ms / 1000;
-	return [duration / 3600, (duration / 60) % 60, (duration) % 60]
-		.map(Math.floor)
-		.filter(n => n)
-		.map(n => n < 10 ? `0${n}` : `${n}`)
-		.join(':');
 }
 
 export function fetchServices(
@@ -246,7 +213,7 @@ export function fetchServices(
 					type: "service",
 					title: "Spotify",
 					description: "Your Spotify collection",
-					thumb: "images/sample/Spotify_Icon_RGB_Green.png",
+					thumbnails: [{url: "images/sample/Spotify_Icon_RGB_Green.png"}],
 					nav: "spotify",
 				},
 				{
@@ -259,133 +226,6 @@ export function fetchServices(
 			]
 		}
 	);
-}
-
-export function fetchAmazonCollection(
-	appServer: IAppServer,
-	done: IResourceFetcherCallback
-) {
-	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/amazon/collection`;
-	const options: RequestInit = {
-		method: 'GET',
-		credentials: 'include',
-		mode: fetchMode,
-	};
-	fetch(url, options)
-		.then(r => {
-			if (r.ok) {
-				return r.json();
-			} else {
-				throw new Error(r.statusText);
-			}
-		})
-		.then(data => done(null,
-			{
-				id: "amazon-service",
-				type: "service",
-				title: "Amazon",
-				description: "Your Amazon Collection",
-			},
-			{
-				playlists: data.playlists.map((i: any) => ({
-					id: i.id,
-					type: "playlist",
-					title: i.title,
-					description: i.description,
-					thumb: i.thumb,
-					nav: `playlist:${i.id}`,
-				})),
-				albums: data.albums.map((i: any) => ({
-					id: i.id,
-					type: "album",
-					title: i.title,
-					description: i.description,
-					thumb: i.thumb,
-					nav: `album:${i.id}`,
-				}))
-			}))
-		.catch(err => done(err, null, null));
-}
-
-export function fetchAmazonPlaylist(
-	appServer: IAppServer,
-	playlistID: string,
-	done: IResourceFetcherCallback
-) {
-	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/amazon/playlist/${playlistID}`;
-	const options: RequestInit = {
-		method: 'GET',
-		credentials: 'include',
-		mode: fetchMode,
-	};
-	fetch(url, options)
-		.then(r => {
-			if (r.ok) {
-				return r.json();
-			} else {
-				throw new Error(r.statusText);
-			}
-		})
-		.then(data => done(null,
-			{
-				id: data.id,
-				type: "playlist",
-				title: data.title,
-				description: data.description,
-			}, {
-				tracks: data.tracks.map((i: any) => ({
-					id: i.id,
-					type: 'track',
-					title: i.title,
-					description: i.description,
-					// Note: playlist thumb instead of track thumb
-					thumb: data.thumb,
-					nav: `track:${i.id}`,
-				}))
-			}))
-		.catch(err => done(err, null, null));
-}
-
-export function fetchAmazonAlbum(
-	appServer: IAppServer,
-	albumID: string,
-	done: IResourceFetcherCallback
-) {
-	const {apiRoot, fetchMode} = appServer;
-	const url = `${apiRoot}/amazon/album/${albumID}`;
-	const options: RequestInit = {
-		method: 'GET',
-		credentials: 'include',
-		mode: fetchMode,
-	};
-	fetch(url, options)
-		.then(r => {
-			if (r.ok) {
-				return r.json();
-			} else {
-				throw new Error(r.statusText);
-			}
-		})
-		.then(data => done(null,
-			{
-				id: data.id,
-				type: "album",
-				title: data.title,
-				description: data.description,
-			}, {
-				tracks: data.tracks.map((i: any) => ({
-					id: i.id,
-					type: 'track',
-					title: i.title,
-					description: i.description,
-					// Note: playlist thumb instead of track thumb
-					thumb: data.thumb,
-					nav: `track:${i.id}`,
-				}))
-			}))
-		.catch(err => done(err, null, null));
 }
 
 export function fetchSpotifyConnectUrl(

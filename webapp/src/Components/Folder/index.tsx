@@ -42,15 +42,16 @@ interface State {
 
 class Folder extends React.Component<Props, State> {
 	render() {
-		const {classes, data: {title, description, thumb, nav}, onClick} = this.props;
+		const {classes, data: {id, type, title, description, thumbnails}, onClick} = this.props;
+		let nav = generateNavLink(type, id);
 		return (
 			<Card className={classes.root}>
 				<CardActionArea onClick={nav ? (() => onClick(nav)) : undefined}>
 					{
-						thumb ?
+						thumbnails && thumbnails.length ?
 							<CardMedia
 								className={classes.thumb}
-								image={thumb}
+								image={thumbnails[0].url}
 								title={title}
 							/>
 							:
@@ -73,6 +74,14 @@ class Folder extends React.Component<Props, State> {
 				</CardActionArea>
 			</Card>
 		);
+	}
+}
+
+function generateNavLink(type: string, id: string): string {
+	if (type === "service") {
+		return id;
+	} else {
+		return `${type}:${id}`;
 	}
 }
 

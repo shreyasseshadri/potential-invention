@@ -12,7 +12,7 @@ export interface IFolderData {
 	type: "track" | "album" | "playlist" | "service" | "misc",
 	title: string,
 	description: string,
-	thumb?: string
+	thumbnails?: [{ width?: Number, height?: Number, url: string }]
 	nav?: string,
 }
 

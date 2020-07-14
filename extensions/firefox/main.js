@@ -18,19 +18,28 @@ setTimeout(() => {
 
 function amazonPlaylistMapper(d) {
 	return {
+		type: "playlist",
 		id: d.playlistId,
 		title: d.title,
-		description: d.title,
-		thumb: d.fourSquareImage ? d.fourSquareImage.url : null,
+		description: null,
+		external_url: null,
+		thumbnails: d.fourSquareImage ? [d.fourSquareImage] : null,
 	};
 }
 
 function amazonTrackMapper(t) {
 	return {
+		type: "track",
 		id: t.metadata.requestedMetadata.objectId,
 		title: t.metadata.requestedMetadata.title,
-		description: t.metadata.requestedMetadata.albumName,
-		thumb: null,
+		duration: t.metadata.requestedMetadata.duration,
+		album: {
+			title: t.metadata.requestedMetadata.albumName,
+			id: t.metadata.requestedMetadata.albumAsin
+		},
+		thumbnails: null,
+		artists: null,
+		external_url: null,
 	};
 }
 
@@ -247,15 +256,20 @@ function getTracksOfAlbums(asins, cb) {
 		})
 		.then(r => {
 			cb(null, r.albumList.map(a => ({
+				type: "album",
 				id: a.globalAsin,
 				title: a.title,
-				description: a.artist.name,
-				thumb: a.image,
+				thumbnails: [{ url: a.image }],
+				external_url: null,
 				tracks: a.tracks.map(t => ({
+					type: "track",
 					id: t.asin,
 					title: t.title,
-					description: a.title,
-					thumb: a.image,
+					duration: t.duration,
+					album: { title: a.title, id: a.globalAsin },
+					thumbnails: [{ url: a.image }],
+					artists: null,
+					external_url: null,
 				}))
 			})));
 		})
