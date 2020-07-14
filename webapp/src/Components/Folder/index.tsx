@@ -46,7 +46,7 @@ class Folder extends React.Component<Props, State> {
 		let nav = generateNavLink(type, id);
 		return (
 			<Card className={classes.root}>
-				<CardActionArea onClick={nav ? (() => onClick(nav)) : undefined}>
+				<CardActionArea onClick={nav ? () => onClick(nav) : undefined}>
 					{
 						thumbnails && thumbnails.length ?
 							<CardMedia
@@ -64,11 +64,11 @@ class Folder extends React.Component<Props, State> {
 							</div>
 					}
 					<CardContent>
-						<Typography gutterBottom variant="h5" component="h2">
+						<Typography gutterBottom variant="h6" noWrap>
 							{title}
 						</Typography>
-						<Typography variant="body2" color="textSecondary" component="p">
-							{description}
+						<Typography variant="body2" color="textSecondary" component="p" noWrap>
+							{description || title}
 						</Typography>
 					</CardContent>
 				</CardActionArea>
@@ -78,10 +78,13 @@ class Folder extends React.Component<Props, State> {
 }
 
 function generateNavLink(type: string, id: string): string {
-	if (type === "service") {
-		return id;
-	} else {
-		return `${type}:${id}`;
+	switch (type) {
+		case "service":
+			return id;
+		case "track":
+			return '';
+		default:
+			return `${type}:${id}`;
 	}
 }
 

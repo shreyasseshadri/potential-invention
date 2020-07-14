@@ -116,13 +116,13 @@ class Explorer extends React.Component<Props, State> {
 								{
 									Object.keys(content).length > 1 ?
 										<Typography style={{textTransform: "capitalize"}} gutterBottom
-													variant={"h4"}>{category}</Typography> : null
+													variant={"h5"}>{category}</Typography> : null
 								}
-								<Grid container spacing={4}>
+								<Grid container spacing={2}>
 									{
-										content[category].map((contentItem, j) => {
+										content[category].map((contentItem) => {
 											return (
-												<Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={j}>
+												<Grid item xs={12} sm={4} md={3} lg={2} xl={2} key={contentItem.id}>
 													<Folder
 														data={contentItem}
 														onClick={this.navigate}
@@ -167,6 +167,7 @@ class Explorer extends React.Component<Props, State> {
 							content: content
 						});
 					}
+					window.scrollTo(0, 0);
 					resetLoading();
 				});
 				break;

@@ -199,33 +199,31 @@ export function fetchServices(
 	appServer: IAppServer,
 	done: IResourceFetcherCallback
 ) {
-	done(null,
-		{
-			id: "explore",
-			type: "misc",
-			title: "Services",
-			description: "Your Music Services",
-		},
-		{
-			"connected": [
-				{
-					id: "spotify",
-					type: "service",
-					title: "Spotify",
-					description: "Your Spotify collection",
-					thumbnails: [{url: "images/sample/Spotify_Icon_RGB_Green.png"}],
-					nav: "spotify",
-				},
-				{
-					id: "amazon",
-					type: "service",
-					title: "Amazon",
-					description: "Your Amazon collection",
-					nav: "amazon",
-				},
-			]
-		}
-	);
+	const {apiRoot, fetchMode} = appServer;
+	const url = `${apiRoot}/auth/me`;
+	const options: RequestInit = {
+		method: 'GET',
+		credentials: 'include',
+		mode: fetchMode,
+	};
+	fetch(url, options)
+		.then(r => {
+			if (r.ok) {
+				return r.json();
+			} else {
+				throw new Error(r.statusText);
+			}
+		})
+		.then(data => done(null,
+			{
+				id: "explore",
+				type: "misc",
+				title: "Services",
+				description: "Your Music Services",
+			}, {
+				"services": data.services
+			}))
+		.catch(err => done(err, null, null));
 }
 
 export function fetchSpotifyConnectUrl(

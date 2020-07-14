@@ -18,10 +18,11 @@ import Connect from "./Components/Connect";
 
 const styles = (theme: Theme) => createStyles({
 	loadingNotifier: {
-		position: "absolute",
+		position: "fixed",
 		top: 0,
 		left: 0,
 		width: "100%",
+		zIndex: theme.zIndex.appBar
 	}
 });
 
