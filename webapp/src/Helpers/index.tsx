@@ -221,7 +221,7 @@ export function fetchServices(
 				title: "Services",
 				description: "Your Music Services",
 			}, {
-				"services": data.services
+				"services": data.services.sort((a: any, b: any) => b.connected - a.connected)
 			}))
 		.catch(err => done(err, null, null));
 }

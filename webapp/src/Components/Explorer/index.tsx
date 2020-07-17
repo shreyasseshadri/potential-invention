@@ -120,9 +120,9 @@ class Explorer extends React.Component<Props, State> {
 								}
 								<Grid container spacing={2}>
 									{
-										content[category].map((contentItem) => {
+										content[category].map((contentItem,j) => {
 											return (
-												<Grid item xs={12} sm={4} md={3} lg={2} xl={2} key={contentItem.id}>
+												<Grid item xs={12} sm={4} md={3} lg={2} xl={2} key={j}>
 													<Folder
 														data={contentItem}
 														onClick={this.navigate}

@@ -42,8 +42,9 @@ interface State {
 
 class Folder extends React.Component<Props, State> {
 	render() {
-		const {classes, data: {id, type, title, description, thumbnails}, onClick} = this.props;
-		let nav = generateNavLink(type, id);
+		const {classes, data, onClick} = this.props;
+		const {id, type, title, thumbnails} = data;
+		let nav = generateNavLink(data);
 		return (
 			<Card className={classes.root}>
 				<CardActionArea onClick={nav ? () => onClick(nav) : undefined}>
@@ -68,7 +69,7 @@ class Folder extends React.Component<Props, State> {
 							{title}
 						</Typography>
 						<Typography variant="body2" color="textSecondary" component="p" noWrap>
-							{description || title}
+							{generateDescription(data)}
 						</Typography>
 					</CardContent>
 				</CardActionArea>
@@ -77,14 +78,30 @@ class Folder extends React.Component<Props, State> {
 	}
 }
 
-function generateNavLink(type: string, id: string): string {
-	switch (type) {
+function generateNavLink(data: any): string {
+	switch (data.type) {
 		case "service":
-			return id;
+			return data.connected ? data.id : '';
 		case "track":
 			return '';
 		default:
-			return `${type}:${id}`;
+			return `${data.type}:${data.id}`;
+	}
+}
+
+function generateDescription(data: any): string {
+	if (data.description && data.description.trim().length) {
+		return data.description.trim();
+	}
+	switch (data.type) {
+		case "service":
+			return data.connected ? "Connected" : "Not connected";
+		case "track":
+			return data?.album?.title || data.title;
+		case "album":
+			return (data.artists && data.artists.map((i: any) => i.name).join(', ')) || data.title;
+		default:
+			return data.title;
 	}
 }
 
