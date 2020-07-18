@@ -37,8 +37,13 @@ function amazonTrackMapper(t) {
 			title: t.metadata.requestedMetadata.albumName,
 			id: t.metadata.requestedMetadata.albumAsin
 		},
-		thumbnails: null,
-		artists: null,
+		thumbnails: [
+			{ url: t.metadata.requestedMetadata.albumCoverImageFull },
+			{ url: t.metadata.requestedMetadata.albumCoverImageLarge },
+			{ url: t.metadata.requestedMetadata.albumCoverImageMedium },
+			{ url: t.metadata.requestedMetadata.albumCoverImageSmall }
+		],
+		artists: [{ name: t.metadata.requestedMetadata.artistName }],
 		external_url: null,
 	};
 }
@@ -105,7 +110,12 @@ function getTracksOfPlaylists(playlistIds, cb) {
 		"referrer": "https://music.amazon.in/home",
 		"body": JSON.stringify({
 			playlistIds: playlistIds,
-			requestedMetadata: ["asin", "albumName", "albumAsin", "sortAlbumName", "artistName", "artistAsin", "primeStatus", "isMusicSubscription", "duration", "sortArtistName", "sortAlbumArtistName", "objectId", "title", "status", "assetType", "discNum", "trackNum", "instantImport", "purchased", "uploaded", "fileExtension", "fileName", "parentalControls"],
+			requestedMetadata: [
+				"albumCoverImageFull", "albumCoverImageLarge",
+				"albumCoverImageMedium", "albumCoverImageSmall",
+				"asin", "albumName", "albumAsin", "artistName",
+				"artistAsin", "duration", "objectId", "title"
+			],
 			deviceId: config.deviceId,
 			deviceType: config.deviceType,
 			musicTerritory: config.musicTerritory,
@@ -260,6 +270,7 @@ function getTracksOfAlbums(asins, cb) {
 				id: a.globalAsin,
 				title: a.title,
 				thumbnails: [{ url: a.image }],
+				artists: [{ name: a.artist.name }],
 				external_url: null,
 				tracks: a.tracks.map(t => ({
 					type: "track",
@@ -268,7 +279,7 @@ function getTracksOfAlbums(asins, cb) {
 					duration: t.duration,
 					album: { title: a.title, id: a.globalAsin },
 					thumbnails: [{ url: a.image }],
-					artists: null,
+					artists: [{ name: t.artist.name }],
 					external_url: null,
 				}))
 			})));
